@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 declare debug=false
+declare hasSession=''
 declare sessionFile='./.aws-session'
 
 alias aws='docker run --rm -t $(tty &>/dev/null && echo "-i") -e "AWS_ACCESS_KEY_ID=''${AWS_ACCESS_KEY_ID}''" -e "AWS_SECRET_ACCESS_KEY=''${AWS_SECRET_ACCESS_KEY}''" -e "AWS_SESSION_TOKEN=''${AWS_SESSION_TOKEN}''" -e "AWS_DEFAULT_REGION=''${AWS_DEFAULT_REGION}''" mesosphere/aws-cli'
@@ -18,9 +19,14 @@ prompt () {
 
 authenticate () {
   debug-log "Authenticating..."
+
+  # shellcheck disable=SC2034
   local AWS_ACCESS_KEY_ID="${1:?'Access key id must be provided'}"
+  # shellcheck disable=SC2034
   local AWS_SECRET_ACCESS_KEY="${2:?'Secret access key must be provided'}"
+  # shellcheck disable=SC2034
   local AWS_SESSION_TOKEN=""
+  # shellcheck disable=SC2034
   local AWS_DEFAULT_REGION="${3:?'Region must be provided'}"
 
   local mfaDevice="${4:?'MFA device (arn) must be provided'}"
@@ -41,22 +47,23 @@ authenticate () {
   done
 
   mfaSessionTokenJson="$(aws sts get-session-token --serial-number ${mfaDevice} --token-code ${mfaTokenCode})"
-  accessKeyId="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.AccessKeyId')"
-  secretAccessKey="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.SecretAccessKey')"
-  sessionToken="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.SessionToken')"
+  accessKeyId="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.AccessKeyId' 2> /dev/null)"
+  secretAccessKey="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.SecretAccessKey' 2> /dev/null)"
+  sessionToken="$(echo "${mfaSessionTokenJson}" | jq -r '.Credentials.SessionToken' 2> /dev/null)"
 
-  : ${accessKeyId:?"'accessKeyId' not set"}
-  : ${secretAccessKey:?"'secretAccessKey' not set"}
-  : ${sessionToken:?"'sessionToken' not set"}
-
-  echo "#!/usr/bin/env bash
+  if [[ "${accessKeyId}" == "" ]] || [[ "${secretAccessKey}" == "" ]] || [[ "${sessionToken}" == "" ]]; then
+    echo "Authentication failed! Try again..."
+    authenticate "${1}" "${2}" "${3}" "${4}"
+  else
+    echo "#!/usr/bin/env bash
 export AWS_ACCESS_KEY_ID='${accessKeyId}'
 export AWS_SECRET_ACCESS_KEY='${secretAccessKey}'
 export AWS_SESSION_TOKEN='${sessionToken}'
 export AWS_DEFAULT_REGION='${AWS_DEFAULT_REGION}'
 export AWS_ACCOUNT_ID='${awsAccountId}'
 export AWS_ACCOUNT_NAME='${awsAccountName}'
-  " >> ${sessionFile}
+    " >> ${sessionFile}
+  fi
 }
 
 is-authenticated () {
@@ -64,7 +71,6 @@ is-authenticated () {
   echo "$?"
 }
 
-declare hasSession=''
 hasSession="$(is-authenticated)"
 
 while [[ "$hasSession" != "0" ]]; do
@@ -80,12 +86,11 @@ while [[ "$hasSession" != "0" ]]; do
   fi
 
   hasSession="$(is-authenticated)"
+
   if [[ "${hasSession}" != "0" ]]; then
     debug-log "Ensuring invalid session file is removed"
     rm ${sessionFile} || true
   fi
-
-  sleep 1
 done
 
 debug-log "Successfully authenticated as user"
