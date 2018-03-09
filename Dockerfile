@@ -16,15 +16,13 @@ RUN apk -v --update add \
     apk -v --purge del py-pip && \
     rm /var/cache/apk/*
 
-VOLUME /root/.aws
 VOLUME /work
-
 WORKDIR /work
 COPY . /work
 
 ENV AWS_MFA_ACCESS_KEY_ID=
 ENV AWS_MFA_SECRET_ACCESS_KEY=
-ENV AWS_MFA_DEFAULT_REGION=us-east-1
+ENV AWS_MFA_DEFAULT_REGION=
 ENV AWS_MFA_DEVICE_ID=
 ENV AWS_MFA_TOKEN_CODE=
 
