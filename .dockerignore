@@ -1,2 +1,4 @@
 .aws-session
+build
+test
 setup.sh

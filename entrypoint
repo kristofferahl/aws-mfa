@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source ./aws-mfa.sh
+aws-mfa "$@" fixbug
+exit $?

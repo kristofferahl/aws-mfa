@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# TEST SETUP
+
+if [[ ! -f ./setup.sh ]]; then
+  echo "Creating ./setup.sh"
+  echo "Edit before running the test again..."
+
+  echo "#!/usr/bin/env bash
+export AWS_MFA_ACCESS_KEY_ID=''        # Your AWS Access Key Id
+export AWS_MFA_SECRET_ACCESS_KEY=''    # Your AWS Secret Access Key
+export AWS_MFA_DEVICE_ID=''            # Your AWS MFA Device ID (arn)
+" > ./setup.sh
+
+  exit 1
+fi
+
+source ./setup.sh
+read -p "MFA code (optional): " inputMfaCode
+read -p "Region   (optional): " inputRegion
+read -p "Output   (optional): " inputOuput
+read -p "Debug    (optional): " inputDebug
+export AWS_MFA_TOKEN_CODE="${inputMfaCode}"
+export AWS_MFA_REGION="${inputRegion}"
+export AWS_MFA_OUTPUT="${inputOuput}"
+export AWS_MFA_DEBUG="${inputDebug}"
+
+
+echo
+echo 'TEST WITH SOURCE'
+echo '------------------------------------------------------'
+
+./entrypoint authenticate \
+  --access-key-id="${AWS_MFA_ACCESS_KEY_ID}" \
+  --secret-access-key="${AWS_MFA_SECRET_ACCESS_KEY}" \
+  --region="${AWS_MFA_REGION}" \
+  --mfa-device="${AWS_MFA_DEVICE_ID}" \
+  --mfa-token-code="${AWS_MFA_TOKEN_CODE}" \
+  --output="${AWS_MFA_OUTPUT}" \
+  --debug="${AWS_MFA_DEBUG}"
+echo "Exit code: $?"
+
+./entrypoint is-authenticated
+echo "Exit code: $?"
+
+
+echo
+echo 'TEST WITH DOCKER'
+echo '------------------------------------------------------'
+
+docker run --rm -it \
+  -v "${PWD}:/work" \
+  kristofferahl/aws-mfa:latest authenticate \
+    --access-key-id="${AWS_MFA_ACCESS_KEY_ID}" \
+    --secret-access-key="${AWS_MFA_SECRET_ACCESS_KEY}" \
+    --region="${AWS_MFA_REGION}" \
+    --mfa-device="${AWS_MFA_DEVICE_ID}" \
+    --mfa-token-code="${AWS_MFA_TOKEN_CODE}" \
+    --output="${AWS_MFA_OUTPUT}" \
+    --debug="${AWS_MFA_DEBUG}"
+echo "Exit code: $?"
+
+docker run --rm -it \
+  -v "${PWD}:/work" \
+  kristofferahl/aws-mfa:latest is-authenticated
+echo "Exit code: $?"

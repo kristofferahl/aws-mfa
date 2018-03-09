@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+docker build -t kristofferahl/aws-mfa:latest .
