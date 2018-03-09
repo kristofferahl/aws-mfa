@@ -23,6 +23,8 @@ A **bash script** or **docker command** for using AWS Multi Factor Authenticatio
 
 ## Using docker
 
+Docker image [kristofferahl/aws-mfa](https://hub.docker.com/r/kristofferahl/aws-mfa/) can be found on Docker Hub.
+
 ### File mode
 
 ```bash
