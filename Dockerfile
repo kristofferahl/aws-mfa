@@ -1,5 +1,5 @@
 FROM alpine:3.6
-MAINTAINER kristofferahl <mail@77dynamite.com>
+LABEL maintainer="kristofferahl <mail@77dynamite.com>"
 
 ARG AWS_CLI_VERSION=1.14.5
 
