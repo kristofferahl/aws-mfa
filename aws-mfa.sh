@@ -62,6 +62,7 @@ authenticate () {
   if [[ "${awsAccountId}" == "" ]]; then
     error-log "Authentication failed!"
     error-log "Invalid 'access key id' or 'secret access key' provided."
+    clean-environment
     return 1
   fi
 
@@ -79,6 +80,7 @@ authenticate () {
   if [[ "${accessKeyId}" == "" ]] || [[ "${secretAccessKey}" == "" ]] || [[ "${sessionToken}" == "" ]]; then
     error-log "Authentication failed!"
     error-log "Invalid 'mfa device' or 'mfa token code' provided."
+    clean-environment
     return 2
   else
     local output
@@ -103,6 +105,12 @@ export AWS_ACCOUNT_NAME='${awsAccountName}'"
 is-authenticated () {
   aws sts get-caller-identity &> /dev/null
   echo "$?"
+}
+
+clean-environment () {
+  export AWS_ACCESS_KEY_ID=''
+  export AWS_SECRET_ACCESS_KEY=''
+  export AWS_DEFAULT_REGION=''
 }
 
 aws-mfa-is-authenticated () {
