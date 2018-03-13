@@ -10,8 +10,6 @@ declare optMfaTokenCode=''
 declare optOutput=''
 declare optDebug=''
 
-# TODO: Fix bug where last option isn't parsed properly
-
 debug-log () {
   if [[ "${optDebug}" == "true" ]]; then
     echo "aws-mfa [DEBUG] $1"
@@ -171,7 +169,7 @@ aws-mfa () {
       return 1;;
   esac
 
-  while [ "$#" -gt 1 ]; do
+  while [ "$#" -gt 0 ]; do
     case "$1" in
       --access-key-id=*) optAccessKeyId="${1#*=}"; shift 1;;
       --secret-access-key=*) optSecretAccessKey="${1#*=}"; shift 1;;
