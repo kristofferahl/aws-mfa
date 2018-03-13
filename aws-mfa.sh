@@ -152,7 +152,7 @@ aws-mfa-authenticate () {
 
     if [[ "${hasSession}" != "0" ]]; then
       debug-log "Ensuring invalid session file is removed"
-      #rm ${sessionFile} || true
+      rm ${sessionFile} || true
     fi
   done
 
