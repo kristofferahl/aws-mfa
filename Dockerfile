@@ -17,13 +17,14 @@ RUN apk -v --update add \
     rm /var/cache/apk/*
 
 VOLUME /work
-WORKDIR /work
-COPY . /work
+COPY . /var/lib/aws-mfa/
+WORKDIR /var/lib/aws-mfa/
 
 ENV AWS_MFA_ACCESS_KEY_ID=
 ENV AWS_MFA_SECRET_ACCESS_KEY=
 ENV AWS_MFA_DEFAULT_REGION=
 ENV AWS_MFA_DEVICE_ID=
 ENV AWS_MFA_TOKEN_CODE=
+ENV AWS_MFA_WORK_DIR=/work/
 
-ENTRYPOINT ["/work/entrypoint"]
+ENTRYPOINT ["./entrypoint"]
