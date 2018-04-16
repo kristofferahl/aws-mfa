@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-declare workDir="${AWS_MFA_WORK_DIR:-'./'}"
-declare sessionFilename="${AWS_MFA_SESSION_FILENAME:-'.aws-session'}"
-declare sessionFile="${workDir:?}${sessionFilename:?}"
+declare sessionFile="${AWS_MFA_SESSION_FILE:-'./.aws-session'}"
 
 declare optAccessKeyId=''
 declare optSecretAccessKey=''
