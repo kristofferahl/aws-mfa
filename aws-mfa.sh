@@ -27,14 +27,6 @@ prompt () {
   fi
 }
 
-source-session-file () {
-  if [[ -f ${sessionFile} ]]; then
-    debug-log "Sourcing session file"
-    # shellcheck source=/dev/null
-    source ${sessionFile}
-  fi
-}
-
 authenticate () {
   debug-log "Authenticating..."
 
@@ -111,8 +103,16 @@ clean-environment () {
   export AWS_DEFAULT_REGION=''
 }
 
+aws-mfa-source-session-file () {
+  if [[ -f ${sessionFile} ]]; then
+    debug-log "Sourcing session file"
+    # shellcheck source=/dev/null
+    source ${sessionFile}
+  fi
+}
+
 aws-mfa-is-authenticated () {
-  source-session-file
+  aws-mfa-source-session-file
   if [[ "$(is-authenticated)" == "0" ]]; then
     echo "true"; exit 0;
   else
@@ -144,7 +144,7 @@ aws-mfa-authenticate () {
       esac
     fi
 
-    source-session-file
+    aws-mfa-source-session-file
 
     hasSession="$(is-authenticated)"
 
@@ -162,7 +162,7 @@ aws-mfa-authenticate () {
 aws-mfa () {
   local cmd="aws-mfa-${1}"
   case "$cmd" in
-    aws-mfa-authenticate|aws-mfa-is-authenticated) ;;
+    aws-mfa-authenticate|aws-mfa-is-authenticated|aws-mfa-source-session-file) ;;
     *)
       error-log "Invalid subcommand!";
       error-log "Usage: aws-mfa <subcommand> [--option1=value --option2=value]"
