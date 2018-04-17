@@ -21,6 +21,12 @@ A **bash script** or **docker command** for using AWS Multi Factor Authenticatio
 --debug              # OPTIONAL (false/true). Default: false
 ```
 
+## Environment variables
+
+```bash
+export AWS_MFA_SESSION_FILE='/work/.aws-session' # Used to override the path to and name of the session file created/imported
+```
+
 ## Using docker
 
 Docker image [kristofferahl/aws-mfa](https://hub.docker.com/r/kristofferahl/aws-mfa/) can be found on Docker Hub.
