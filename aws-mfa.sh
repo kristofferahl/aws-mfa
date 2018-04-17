@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare sessionFile="${AWS_MFA_SESSION_FILE:-'./.aws-session'}"
+export AWS_MFA_SESSION_FILE="${AWS_MFA_SESSION_FILE:-'./.aws-session'}"
 
 declare optAccessKeyId=''
 declare optSecretAccessKey=''
@@ -82,8 +82,8 @@ export AWS_ACCOUNT_ID='${awsAccountId}'
 export AWS_ACCOUNT_NAME='${awsAccountName}'"
 
     if [[ "${optOutput}" == "file" ]]; then
-      debug-log "Output is set to ${optOutput} (${sessionFile})"
-      echo -e "#!/usr/bin/env bash\n${output}" >> ${sessionFile}
+      debug-log "Output is set to ${optOutput} (${AWS_MFA_SESSION_FILE:?})"
+      echo -e "#!/usr/bin/env bash\n${output}" >> ${AWS_MFA_SESSION_FILE:?}
     else
       debug-log "Output is set to ${optOutput}"
       echo "${output}"
@@ -104,10 +104,10 @@ clean-environment () {
 }
 
 aws-mfa-source-session-file () {
-  if [[ -f ${sessionFile} ]]; then
+  if [[ -f ${AWS_MFA_SESSION_FILE:?} ]]; then
     debug-log "Sourcing session file"
     # shellcheck source=/dev/null
-    source ${sessionFile}
+    source ${AWS_MFA_SESSION_FILE:?}
   fi
 }
 
@@ -135,7 +135,7 @@ aws-mfa-authenticate () {
   while [[ "$hasSession" != "0" ]]; do
     debug-log "No valid AWS session available"
 
-    if [[ ! -f ${sessionFile} ]]; then
+    if [[ ! -f ${AWS_MFA_SESSION_FILE:?} ]]; then
       authenticate
       error="$?"
       case "${error}" in
@@ -150,7 +150,7 @@ aws-mfa-authenticate () {
 
     if [[ "${hasSession}" != "0" ]]; then
       debug-log "Ensuring invalid session file is removed"
-      rm ${sessionFile} || true
+      rm ${AWS_MFA_SESSION_FILE:?} || true
     fi
   done
 
